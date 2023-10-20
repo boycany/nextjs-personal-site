@@ -2,27 +2,18 @@ import Head from "next/head";
 import Layout, { siteTitle } from "../components/layout";
 import utilStyles from "../styles/utils.module.css";
 import Alert from "../components/alert";
-import { getSortedPostsData } from "../lib/posts";
+import { getSortedPostsData, getMediumPosts } from "../lib/posts";
 import useSWR from "swr";
 import { format } from "date-fns";
 import Link from "next/link";
 import Date from "../components/date";
 
-const apiUrl = "https://v1.nocodeapi.com/redchien/medium/nnNgXroWaTVNWxLG";
+const apiUrl = process.env.API_URL;
 // const apiUrl = "https://jsonplaceholder.typicode.com/posts"
 
-const fetcher = async () => {
-    const res = await fetch(apiUrl);
-    const data = await res.json();
-    return data;
-};
-
-export default function Home({ allPostsData }) {
+export default function Home({ allPostsData, data }) {
     // console.log("allPostsData :>> ", allPostsData);
-
-    const { data, error, isLoading } = useSWR(apiUrl, fetcher);
-    // console.log("data :>> ", data);
-
+    // const { data, error, isLoading } = useSWR(apiUrl, fetcher);
     return (
         <Layout home>
             <Head>
@@ -59,10 +50,8 @@ export default function Home({ allPostsData }) {
                 })}
             </section>
             <hr />
-            {error ? (
-                <Alert type="error">Get Medium Error.</Alert>
-            ) : isLoading ? (
-                <Alert type="success">Loading...</Alert>
+            {!data ? (
+                <Alert type="error">Fetch Medium Posts Error</Alert>
             ) : (
                 <section
                     className={`${utilStyles.headingMd} ${utilStyles.padding1px}`}
@@ -96,10 +85,12 @@ export default function Home({ allPostsData }) {
 
 export async function getStaticProps() {
     const allPostsData = getSortedPostsData();
+    const data = await getMediumPosts();
 
     return {
         props: {
             allPostsData,
+            data,
         },
     };
 }
